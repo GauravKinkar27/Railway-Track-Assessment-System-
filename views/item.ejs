@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asset Details - <%= item.uid %></title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* --- General Styling & Variables --- */
+      :root {
+        --primary-color: #007bff;
+        --success-bg: #e8f5e9;
+        --success-border: #4caf50;
+        --success-text: #1b5e20;
+        --fail-bg: #ffcdd2;
+        --fail-border: #f44336;
+        --fail-text: #b71c1c;
+        --warning-bg: #fff3e0;
+        --warning-border: #fb8c00;
+        --warning-text: #e65100;
+        --light-gray: #f8f9fa;
+        --gray-border: #dee2e6;
+        --text-color: #343a40;
+        --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        --border-radius: 8px;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: var(--light-gray);
+        color: var(--text-color);
+      }
+
+      /* --- Layout & Container --- */
+      .container {
+        max-width: 1200px;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 24px;
+      }
+
+      .card {
+        background: #fff;
+        padding: 24px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--gray-border);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin-top: 0;
+        color: #000;
+      }
+
+      h1 {
+        font-size: 2rem;
+        border-bottom: 1px solid var(--gray-border);
+        padding-bottom: 16px;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        border-bottom: 1px solid var(--gray-border);
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+      }
+
+      /* --- AI Verdict Box --- */
+      .ai-remark-box {
+        padding: 20px;
+        border-radius: var(--border-radius);
+        border-left-width: 5px;
+        border-style: solid;
+      }
+      .ai-remark-box h2 {
+        font-size: 1.25rem;
+        border: none;
+        margin-bottom: 8px;
+      }
+      .status-ok {
+        background-color: var(--success-bg);
+        border-color: var(--success-border);
+        color: var(--success-text);
+      }
+      .status-fail {
+        background-color: var(--fail-bg);
+        border-color: var(--fail-border);
+        color: var(--fail-text);
+      }
+      .status-warning {
+        background-color: var(--warning-bg);
+        border-color: var(--warning-border);
+        color: var(--warning-text);
+      }
+
+      /* --- Asset Details List --- */
+      .details-list {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 12px;
+        font-size: 0.95rem;
+      }
+      .details-list dt {
+        font-weight: 600;
+        color: #555;
+      }
+      .details-list dd {
+        margin: 0;
+        word-break: break-all;
+      }
+
+      /* --- QR Code Section --- */
+      .qr-section img {
+        max-width: 150px;
+        height: auto;
+        border: 1px solid var(--gray-border);
+        padding: 10px;
+        border-radius: var(--border-radius);
+      }
+      .qr-section a {
+        color: var(--primary-color);
+        word-break: break-all;
+      }
+
+      /* --- Form Styling --- */
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid var(--gray-border);
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+      form button {
+        padding: 12px 20px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>
+          Asset Details:
+          <span style="color: var(--primary-color)"><%= item.uid %></span>
+        </h1>
+      </header>
+
+      <% if (assemblyRemark) { %>
+      <div class="ai-remark-box status-<%= assemblyRemark.status %>">
+        <h2>🤖 AI Verdict: <%= assemblyRemark.remark %></h2>
+        <p><strong>Reason:</strong> <%= assemblyRemark.reason %></p>
+      </div>
+      <% } %>
+
+      <div class="grid-container">
+        <div class="card">
+          <h2>Core Information</h2>
+          <dl class="details-list">
+            <dt>PL Number:</dt>
+            <dd><%= item.pl_number || "N/A" %></dd>
+            <dt>Item Type:</dt>
+            <dd><%= item.item_type || "N/A" %></dd>
+            <dt>Vendor:</dt>
+            <dd>
+              <%= item.vendor_name || "N/A" %> (<%= item.vendor_code || "N/A"
+              %>)
+            </dd>
+            <dt>Lot No:</dt>
+            <dd><%= item.lot_no || "N/A" %></dd>
+            <dt>PO Number:</dt>
+            <dd><%= item.po_number || "N/A" %></dd>
+            <dt>Depot:</dt>
+            <dd><%= item.depot_code || "N/A" %></dd>
+            <dt>Division:</dt>
+            <dd><%= item.division || "N/A" %></dd>
+            <dt>Zone:</dt>
+            <dd><%= item.zone || "N/A" %></dd>
+            <dt>Asset ID:</dt>
+            <dd><%= item.asset_id || "N/A" %></dd>
+            <dt>Asset Type:</dt>
+            <dd><%= item.asset_type || "N/A" %></dd>
+            <dt>KM Point:</dt>
+            <dd><%= item.km_point || "N/A" %></dd>
+            <dt>Condition:</dt>
+            <dd><%= item.condition_lot || "N/A" %></dd>
+            <dt>Remarks:</dt>
+            <dd><%= item.remarks || "N/A" %></dd>
+            <dt>Supply Date:</dt>
+            <dd><%= item.supply_date || "N/A" %></dd>
+            <dt>Warranty Expiry:</dt>
+            <dd><%= item.warranty_expiry || "N/A" %></dd>
+            <dt>Install Date:</dt>
+            <dd><%= item.install_date || "N/A" %></dd>
+            <dt>Last Inspection:</dt>
+            <dd><%= item.last_inspection || "N/A" %></dd>
+          </dl>
+        </div>
+
+        <div class="card">
+          <h2>📊 AI Contextual Report</h2>
+          <div style="max-width: 300px; margin: 0 auto 24px auto">
+            <canvas id="vendorLotChart"></canvas>
+          </div>
+          <% if (vendorReport) { %>
+          <div>
+            <h3>Vendor Performance: <%= item.vendor_name %></h3>
+            <p>
+              <strong>Total Assets Supplied:</strong> <%=
+              vendorReport.total_assets %>
+            </p>
+            <p>
+              <strong>Assets in Good Condition:</strong> <%=
+              vendorReport.good_condition %>
+            </p>
+            <p>
+              <strong>Assets Needing Repair:</strong> <%=
+              vendorReport.needs_repair %>
+            </p>
+          </div>
+          <% } %> <% if (assetTypeReport) { %>
+          <div style="margin-top: 20px">
+            <h3>Asset Type Overview: <%= item.asset_type %></h3>
+            <p>
+              <strong>Total Units in Inventory:</strong> <%=
+              assetTypeReport.total_units %>
+            </p>
+            <p>
+              <strong>Avg. Warranty Days Left:</strong>
+              <%= assetTypeReport.avg_days_left_warranty ?
+              Math.round(assetTypeReport.avg_days_left_warranty) : 0 %>
+            </p>
+          </div>
+          <% } %>
+        </div>
+
+        <div style="display: contents">
+          <div class="card">
+            <h2>Edit Asset Details</h2>
+            <form
+              method="POST"
+              action="/item/<%= encodeURIComponent(item.uid) %>"
+            >
+              <div class="form-group">
+                <label for="condition_lot">Condition:</label>
+                <input
+                  id="condition_lot"
+                  name="condition_lot"
+                  value="<%= item.condition_lot || '' %>"
+                />
+              </div>
+              <div class="form-group">
+                <label for="remarks">Remarks:</label>
+                <textarea id="remarks" name="remarks" rows="4">
+<%= item.remarks || '' %></textarea
+                >
+              </div>
+              <div class="form-group">
+                <label for="last_inspection">Last Inspection Date:</label>
+                <input
+                  id="last_inspection"
+                  type="date"
+                  name="last_inspection"
+                  value="<%= item.formatted_last_inspection %>"
+                />
+              </div>
+              <button type="submit">Update Asset</button>
+            </form>
+          </div>
+
+          <div class="card qr-section">
+            <h2>QR Code</h2>
+            <% if (item.qr_link) { %>
+            <p>Scan to view this asset's details:</p>
+            <img
+              src="/qr/<%= encodeURIComponent(item.uid) %>.png"
+              alt="QR Code for <%= item.uid %>"
+            />
+            <p style="margin-top: 10px">
+              <strong>Link:</strong>
+              <a href="<%= item.qr_link %>" target="_blank" rel="noopener"
+                >Open Link</a
+              >
+            </p>
+            <% } else { %>
+            <p>No QR code has been generated for this item.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Pass data as a string to avoid linter errors, then parse it.
+      const lotStatusData =
+        "<%- JSON.stringify(lotStatusSummary || { ready: 0, notReady: 0 }) %>";
+      const vendorNameData =
+        '<%- JSON.stringify(item.vendor_name || "Unknown Vendor") %>';
+
+      // Now, parse the strings into usable JavaScript variables.
+      const LOT_STATUS = JSON.parse(lotStatusData);
+      const VENDOR_NAME = JSON.parse(vendorNameData);
+
+      // IIFE (Immediately Invoked Function Expression) to render the chart
+      (function renderLotChart() {
+        const ready = Number(LOT_STATUS.ready) || 0;
+        const notReady = Number(LOT_STATUS.notReady) || 0;
+
+        // Don't render the chart if there is no data
+        if (ready <= 0 && notReady <= 0) return;
+
+        const ctx = document.getElementById("vendorLotChart");
+        if (!ctx) return;
+
+        // Destroy any existing chart instance to prevent memory leaks if script is re-run
+        if (window.__vendorLotChartInstance) {
+          try {
+            window.__vendorLotChartInstance.destroy();
+          } catch (e) {}
+        }
+
+        window.__vendorLotChartInstance = new Chart(ctx.getContext("2d"), {
+          type: "pie",
+          data: {
+            labels: ["Ready to Assemble", "Not Ready / Needs Inspection"],
+            datasets: [
+              {
+                label: "Lot Status",
+                data: [ready, notReady],
+                backgroundColor: [
+                  "rgba(75, 192, 192, 0.7)",
+                  "rgba(255, 159, 64, 0.7)",
+                ],
+                borderColor: ["rgba(75, 192, 192, 1)", "rgba(255, 159, 64, 1)"],
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: "top" },
+              title: {
+                display: true,
+                text: "Lot Readiness for Vendor: " + VENDOR_NAME,
+              },
+            },
+          },
+        });
+      })();
+    </script>
+  </body>
+</html>
